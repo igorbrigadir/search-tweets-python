@@ -13,6 +13,7 @@ import time
 import re
 import logging
 import requests
+from ratelimit import limits, sleep_and_retry
 try:
     import ujson as json
 except ImportError:
@@ -107,7 +108,9 @@ def retry(func):
 
     return retried_func
 
-
+@sleep_and_retry
+@limits(calls=10, period=1)
+@limits(calls=30, period=60)
 @retry
 def request(session, url, rule_payload, **kwargs):
     """
